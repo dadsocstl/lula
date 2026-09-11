@@ -42,15 +42,21 @@ jobs:
         run: pnpm store path | xargs -I{} mkdir -p "{}"
 
       - name: Auth to npm
+        if: ${{ secrets.NPM_TOKEN != '' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
 
       - name: Publish to NPM
+        if: ${{ secrets.NPM_TOKEN != '' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         shell: bash
         run: |
           set -x
           ./scripts/nightlies.sh
+
+      - name: Skip publish (missing NPM token)
+        if: ${{ secrets.NPM_TOKEN == '' }}
+        run: echo "Skipping nightly publish because NPM_TOKEN is not configured."
